@@ -51,6 +51,32 @@ const ContentSchema = new mongoose.Schema({
         title: String,
         description: String
       }]
+    },
+    philosophy: {
+      badge: String,
+      title1: String,
+      title2: String,
+      description: String,
+      imageUrl: String
+    },
+    stats: {
+      items: [{
+        label: String,
+        value: String,
+        description: String
+      }]
+    },
+    testimonial: {
+      quote: String,
+      author: String,
+      backgroundImageUrl: String
+    },
+    approach: {
+      title1: String,
+      title2: String,
+      description: String,
+      imageUrl: String,
+      list: [String]
     }
   },
   services: {
@@ -115,7 +141,8 @@ const ContentSchema = new mongoose.Schema({
     copyright: String
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  strict: false
 });
 
 // Delete cached model if it exists

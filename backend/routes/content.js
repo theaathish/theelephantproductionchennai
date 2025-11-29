@@ -55,23 +55,76 @@ const defaultContent = {
     },
     "content": {
       "title": "From Chennai to Singapore",
-      "description": "Founded on the belief that every love story deserves a cinematic masterpiece.",
+      "description": "Founded on the belief that every love story deserves a cinematic masterpiece, The Elephant Productions began as a small team of dreamers in Chennai.",
       "features": [
         {
-          "icon": "Users",
-          "title": "The Team",
-          "description": "A collective of artists, filmmakers, and editors."
+          "icon": "Camera",
+          "title": "Cinematic Excellence",
+          "description": "We bring international standards to every frame, crafting visual stories that transcend traditional wedding videography."
+        },
+        {
+          "icon": "Heart",
+          "title": "Emotional Storytelling",
+          "description": "Every couple has a unique story. We capture the raw emotions and authentic moments that make your celebration truly yours."
         },
         {
           "icon": "Globe",
-          "title": "Global Reach",
-          "description": "Covering weddings across India and Southeast Asia."
+          "title": "Global Perspective",
+          "description": "With roots in Singapore and base in Chennai, we blend diverse cultural influences into stunning cinematic experiences."
+        }
+      ]
+    },
+    "philosophy": {
+      "badge": "Our Philosophy",
+      "title1": "A Timeless Style",
+      "title2": "& True Expertise",
+      "description": "As a creative studio with high standards for quality and talent, our portfolio is a reflection of that in itself. But what really speaks loudly is how we achieve that quality behind the scenes, starting with our founder, Dave.",
+      "imageUrl": "/images/approach.jpg"
+    },
+    "stats": {
+      "items": [
+        {
+          "label": "YEARS OF EXPERIENCE",
+          "value": "15+",
+          "description": ""
         },
         {
-          "icon": "Star",
-          "title": "Premium Quality",
-          "description": "Using industry-leading cinema cameras."
+          "label": "WEDDINGS COVERED",
+          "value": "2,200",
+          "description": ""
+        },
+        {
+          "label": "COUNTRIES",
+          "value": "3",
+          "description": ""
+        },
+        {
+          "label": "BAGS DUG OUT OF THE TRASH",
+          "value": "1",
+          "description": ""
+        },
+        {
+          "label": "TIMES YOU'LL WANT TO RELIVE",
+          "value": "infinite",
+          "description": ""
         }
+      ]
+    },
+    "testimonial": {
+      "quote": "A TRUE WORK OF ART",
+      "author": "— ALEXIS",
+      "backgroundImageUrl": "/images/testimonial-bg.jpg"
+    },
+    "approach": {
+      "title1": "A Timeless Style",
+      "title2": "& True Expertise",
+      "description": "As a creative studio with high standards for quality and talent, our portfolio is a reflection of that in itself. But what really speaks loudly is how we achieve that quality behind the scenes, starting with our founder, Dave.",
+      "imageUrl": "/images/approach.jpg",
+      "list": [
+        "International cinematic standards applied to South Indian celebrations",
+        "Natural, candid storytelling that captures real emotions",
+        "Professional team that blends seamlessly into your celebration",
+        "Nearly 15 years of experience creating timeless wedding films"
       ]
     }
   },

@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://0jdbg6kb-3000.inc1.devtunnels.ms'],
+  origin: ['http://localhost:3000', 'https://0jdbg6kb-3000.inc1.devtunnels.ms', 'https://theelephantproductionchennai.vercel.app', 'https://elephant-production.com'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
