@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { api } from '@/lib/api';
 
 const defaultContent = {
   "site": {
@@ -13,7 +14,7 @@ const defaultContent = {
       "title1": "Your story,",
       "title2": "crafted with soul.",
       "ctaText": "VIEW PORTFOLIO",
-      "videoUrl": "/videos/hero.mp4",
+      "videoUrl": "/hero-final.mp4",
       "posterUrl": "/images/hero-poster.jpg"
     },
     "marquee": {
@@ -41,7 +42,7 @@ const defaultContent = {
           "id": 2,
           "title": "Meera & Sunder",
           "subtitle": "Pre-Wedding in Mahabalipuram",
-          "imageUrl": "/images/portfolio4.jpg",
+          "imageUrl": "/portfolio4.jpg",
           "videoUrl": "/videos/portfolio2.mp4"
         }
       ]
@@ -174,59 +175,83 @@ const defaultContent = {
 
 interface AdminContextType {
   isAdmin: boolean;
-  login: (password: string) => boolean;
+  loading: boolean;
+  login: (password: string) => Promise<boolean>;
   logout: () => void;
   content: any;
-  updateContent: (newContent: any) => void;
+  updateContent: (newContent: any) => Promise<void>;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [content, setContent] = useState<any>(defaultContent);
 
   useEffect(() => {
-    // Check if admin is logged in
-    const adminStatus = localStorage.getItem('isAdmin');
-    if (adminStatus === 'true') {
-      setIsAdmin(true);
-    }
+    // Check if admin is logged in and verify token
+    const initAuth = async () => {
+      const token = localStorage.getItem('adminToken');
+      if (token) {
+        try {
+          await api.verifyToken();
+          setIsAdmin(true);
+        } catch (error) {
+          console.error('Token verification failed:', error);
+          localStorage.removeItem('adminToken');
+          setIsAdmin(false);
+        }
+      }
+      setLoading(false);
+    };
 
-    // Load saved content from localStorage
-    const savedContent = localStorage.getItem('elephantAdminContent');
-    if (savedContent) {
+    // Load content from backend
+    const loadContent = async () => {
       try {
-        setContent(JSON.parse(savedContent));
-      } catch (e) {
-        console.error('Failed to parse saved content:', e);
+        const response = await api.getContent();
+        setContent(response.data);
+      } catch (error) {
+        console.error('Failed to load content:', error);
+        // Fallback to default content
         setContent(defaultContent);
       }
-    }
+    };
+
+    initAuth();
+    loadContent();
   }, []);
 
-  const login = (password: string) => {
-    // Simple password check - in production, use proper authentication
-    if (password === 'elephant2024') {
+  const login = async (password: string) => {
+    try {
+      const response = await api.login(password);
+      localStorage.setItem('adminToken', response.token);
       setIsAdmin(true);
-      localStorage.setItem('isAdmin', 'true');
       return true;
+    } catch (error) {
+      console.error('Login failed:', error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
     setIsAdmin(false);
-    localStorage.removeItem('isAdmin');
+    localStorage.removeItem('adminToken');
+    api.logout().catch(console.error);
   };
 
-  const updateContent = (newContent: any) => {
-    setContent(newContent);
-    localStorage.setItem('elephantAdminContent', JSON.stringify(newContent));
+  const updateContent = async (newContent: any) => {
+    try {
+      await api.updateContent(newContent);
+      setContent(newContent);
+    } catch (error) {
+      console.error('Failed to update content:', error);
+      throw error;
+    }
   };
 
   return (
-    <AdminContext.Provider value={{ isAdmin, login, logout, content, updateContent }}>
+    <AdminContext.Provider value={{ isAdmin, loading, login, logout, content, updateContent }}>
       {children}
     </AdminContext.Provider>
   );

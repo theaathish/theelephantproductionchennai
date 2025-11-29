@@ -1,10 +1,13 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { ASSETS } from '@/lib/assets';
+import { normalizeMediaUrl } from '@/lib/media';
 import { Reveal } from '@/components/animations/Reveal';
 import { TextReveal } from '@/components/animations/TextReveal';
 import { ParallaxImage } from '@/components/animations/ParallaxImage';
 import { VideoCard } from '@/components/cards/VideoCard';
+import { MediaCard } from '@/components/cards/MediaCard';
 import { useAdmin } from '@/contexts/AdminContext';
 
 interface HomePageProps {
@@ -13,6 +16,15 @@ interface HomePageProps {
 
 export const HomePage = ({ setPage }: HomePageProps) => {
   const { content } = useAdmin();
+  const [showContent, setShowContent] = useState(false);
+
+  useEffect(() => {
+    // Show hero content after 5 seconds
+    const timer = setTimeout(() => {
+      setShowContent(true);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
   
   return (
   <div className="animate-in fade-in duration-500">
@@ -21,27 +33,21 @@ export const HomePage = ({ setPage }: HomePageProps) => {
           {/* Fallback gradient background */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#2c2420] via-[#3d3330] to-[#1a1512]"></div>
           
-          {/* Video background (only if URL exists) */}
-          {content?.home?.hero?.videoUrl && (
-            <video 
-              autoPlay 
-              loop 
-              muted 
-              playsInline 
-              poster={content?.home?.hero?.posterUrl}
-              className="absolute inset-0 w-full h-full object-cover opacity-40"
-              onError={(e) => {
-                // Hide video if it fails to load
-                e.currentTarget.style.display = 'none';
-              }}
-            >
-              <source src={content?.home?.hero?.videoUrl} type="video/mp4" />
-            </video>
-          )}
+          {/* Video background */}
+          <video 
+            autoPlay
+            loop 
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ opacity: 0.9 }}
+          >
+            <source src="/hero-final.mp4" type="video/mp4" />
+          </video>
           
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80"></div>
       </div>
-      <div className="relative z-10 container px-4">
+      <div className={`relative z-10 container px-4 transition-opacity duration-1000 ${showContent ? 'opacity-100' : 'opacity-0'}`}>
         <Reveal>
           <div className="inline-flex items-center gap-3 mb-8 border border-white/20 px-4 py-1 rounded-full backdrop-blur-sm">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
@@ -81,7 +87,15 @@ export const HomePage = ({ setPage }: HomePageProps) => {
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-24 items-center">
           <div className="relative group">
-            <Reveal><div className="w-full h-[700px] relative z-10 shadow-2xl overflow-hidden"><ParallaxImage src={ASSETS.about} alt="Detail" className="w-full h-full" /></div></Reveal>
+            <Reveal>
+              <div className="w-full h-[700px] relative z-10 shadow-2xl overflow-hidden">
+                <ParallaxImage 
+                  src={normalizeMediaUrl(content?.home?.philosophy?.imageUrl) || ASSETS.about} 
+                  alt="Philosophy" 
+                  className="w-full h-full" 
+                />
+              </div>
+            </Reveal>
             <div className="absolute -bottom-12 -right-12 z-20 hidden md:block">
                <div className="w-48 h-48 bg-[#2c2420] rounded-full flex items-center justify-center animate-spin-slow">
                   <svg viewBox="0 0 100 100" className="w-full h-full fill-white opacity-80 p-2">
@@ -92,17 +106,32 @@ export const HomePage = ({ setPage }: HomePageProps) => {
             </div>
           </div>
           <div className="space-y-12">
-            <Reveal delay={100}><div className="flex items-center gap-4"><div className="h-[1px] w-12 bg-[#a67b5b]"></div><span className="text-[#a67b5b] uppercase tracking-[0.3em] text-xs font-bold">The Philosophy</span></div></Reveal>
+            <Reveal delay={100}>
+              <div className="flex items-center gap-4">
+                <div className="h-[1px] w-12 bg-[#a67b5b]"></div>
+                <span className="text-[#a67b5b] uppercase tracking-[0.3em] text-xs font-bold">
+                  {content?.home?.philosophy?.badge || 'The Philosophy'}
+                </span>
+              </div>
+            </Reveal>
             <div className="overflow-hidden">
                <TextReveal type="word" className="text-5xl md:text-6xl font-serif text-[#2c2420] leading-[1.1]">
-                  We don&apos;t just capture moments.
+                  {content?.home?.philosophy?.title1 || "We don't just capture moments."}
                </TextReveal>
                <TextReveal type="word" delay={150} className="text-5xl md:text-6xl font-serif text-[#a67b5b] italic leading-[1.1]">
-                  We bottle feelings.
+                  {content?.home?.philosophy?.title2 || 'We bottle feelings.'}
                </TextReveal>
             </div>
-            <Reveal delay={250}><p className="text-gray-600 leading-loose font-light text-lg max-w-md">Based in Chennai with roots in Singapore, we bring an international cinematic standard to South Indian celebrations. We trade stiff poses for messy, beautiful, real interactions.</p></Reveal>
-            <Reveal delay={300}><button onClick={() => setPage('about')} className="group text-[#2c2420] text-sm uppercase tracking-widest font-bold flex items-center gap-4 interactive">Read Our Story <span className="group-hover:translate-x-2 transition-transform duration-200">→</span></button></Reveal>
+            <Reveal delay={250}>
+              <p className="text-gray-600 leading-loose font-light text-lg max-w-md">
+                {content?.home?.philosophy?.description || 'Based in Chennai with roots in Singapore, we bring an international cinematic standard to South Indian celebrations. We trade stiff poses for messy, beautiful, real interactions.'}
+              </p>
+            </Reveal>
+            <Reveal delay={300}>
+              <button onClick={() => setPage('about')} className="group text-[#2c2420] text-sm uppercase tracking-widest font-bold flex items-center gap-4 interactive">
+                {content?.home?.philosophy?.ctaText || 'Read Our Story'} <span className="group-hover:translate-x-2 transition-transform duration-200">→</span>
+              </button>
+            </Reveal>
           </div>
         </div>
       </div>
@@ -110,10 +139,24 @@ export const HomePage = ({ setPage }: HomePageProps) => {
 
     <section className="py-32 bg-[#e8e0d9]/20">
       <div className="container mx-auto px-6">
-         <Reveal><h2 className="text-4xl md:text-6xl font-serif text-[#2c2420] text-center mb-20">Latest Journals</h2></Reveal>
+         <Reveal><h2 className="text-4xl md:text-6xl font-serif text-[#2c2420] text-center mb-20">{content?.home?.latestJournals?.title || 'Latest Journals'}</h2></Reveal>
          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <Reveal delay={50}><VideoCard imageSrc={ASSETS.portfolio2} videoSrc={ASSETS.portfolioVideo1} title="Kavya & Rohan" subtitle="The Wedding Film" className="h-[600px] w-full" /></Reveal>
-            <Reveal delay={100}><VideoCard imageSrc={ASSETS.portfolio4} videoSrc={ASSETS.portfolioVideo2} title="Meera & Sunder" subtitle="Pre-Wedding in Mahabalipuram" className="h-[600px] w-full mt-0 md:mt-24" /></Reveal>
+            {content?.home?.latestJournals?.stories?.map((story: any, index: number) => (
+              <Reveal key={story.id || index} delay={50 + (index * 50)}>
+                <MediaCard 
+                  mediaUrl={story.mediaUrl || story.imageUrl || story.videoUrl || ''} 
+                  thumbnailUrl={story.thumbnailUrl}
+                  title={story.title} 
+                  subtitle={story.subtitle} 
+                  className={`h-[600px] w-full ${index === 1 ? 'mt-0 md:mt-24' : ''}`} 
+                />
+              </Reveal>
+            )) || (
+              <>
+                <Reveal delay={50}><VideoCard imageSrc={ASSETS.portfolio2} videoSrc={ASSETS.portfolioVideo1} title="Kavya & Rohan" subtitle="The Wedding Film" className="h-[600px] w-full" /></Reveal>
+                <Reveal delay={100}><VideoCard imageSrc={ASSETS.portfolio4} videoSrc={ASSETS.portfolioVideo2} title="Meera & Sunder" subtitle="Pre-Wedding in Mahabalipuram" className="h-[600px] w-full mt-0 md:mt-24" /></Reveal>
+              </>
+            )}
          </div>
          <div className="text-center mt-24">
            <button onClick={() => setPage('stories')} className="interactive px-10 py-4 border border-[#2c2420] text-[#2c2420] text-xs uppercase tracking-[0.2em] hover:bg-[#2c2420] hover:text-white transition-colors duration-200">View All Stories</button>

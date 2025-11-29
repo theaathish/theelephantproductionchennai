@@ -1,6 +1,7 @@
 'use client';
 
 import { Menu, X } from 'lucide-react';
+import { useAdmin } from '@/contexts/AdminContext';
 
 interface NavigationProps {
   isScrolled: boolean;
@@ -11,15 +12,17 @@ interface NavigationProps {
 }
 
 export const Navigation = ({ isScrolled, activePage, mobileMenuOpen, setActivePage, setMobileMenuOpen }: NavigationProps) => {
+  const { content } = useAdmin();
+  
   return (
     <>
       <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled || activePage !== 'home' ? 'bg-[#fdfcf8]/95 backdrop-blur-sm shadow-sm py-4' : 'bg-transparent py-8'}`}>
         <div className="container mx-auto px-6 flex justify-between items-center">
           <div className="flex flex-col cursor-pointer group interactive" onClick={() => setActivePage('home')}>
-            <span className={`font-serif text-2xl md:text-3xl tracking-widest font-semibold transition-colors duration-200 ${isScrolled || activePage !== 'home' ? 'text-[#2c2420]' : 'text-white'}`}>THE ELEPHANT PRODUCTION</span>
+            <span className={`font-serif text-2xl md:text-3xl tracking-widest font-semibold transition-colors duration-200 ${isScrolled || activePage !== 'home' ? 'text-[#2c2420]' : 'text-white'}`}>{content?.site?.title || 'THE ELEPHANT PRODUCTION'}</span>
             <div className="flex items-center gap-2 transition-all duration-200">
               <div className={`h-[1px] w-8 transition-colors ${isScrolled || activePage !== 'home' ? 'bg-[#a67b5b]' : 'bg-white/50'}`}></div>
-              <span className={`text-[10px] tracking-[0.3em] uppercase text-center transition-colors ${isScrolled || activePage !== 'home' ? 'text-[#a67b5b]' : 'text-white/80'}`}>Chennai</span>
+              <span className={`text-[10px] tracking-[0.3em] uppercase text-center transition-colors ${isScrolled || activePage !== 'home' ? 'text-[#a67b5b]' : 'text-white/80'}`}>{content?.site?.subtitle || 'Chennai'}</span>
             </div>
           </div>
 

@@ -5,7 +5,7 @@ import { useAdmin } from '@/contexts/AdminContext';
 import { Save } from 'lucide-react';
 
 export default function ContactAdmin() {
-  const { content, updateContent } = useAdmin();
+  const { content, updateContent, loading } = useAdmin();
   const [contactData, setContactData] = useState<any>(null);
   const [saved, setSaved] = useState(false);
 
@@ -15,16 +15,27 @@ export default function ContactAdmin() {
     }
   }, [content]);
 
-  const handleSave = () => {
-    updateContent({
-      ...content,
-      contact: contactData
-    });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    try {
+      await updateContent({
+        ...content,
+        contact: contactData
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error('Save failed:', error);
+      alert('Failed to save changes');
+    }
   };
 
-  if (!contactData) return <div>Loading...</div>;
+  if (loading || !contactData) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div>

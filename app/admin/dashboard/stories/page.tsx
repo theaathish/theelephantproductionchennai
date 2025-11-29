@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useAdmin } from '@/contexts/AdminContext';
-import { Save, Plus, Trash2 } from 'lucide-react';
+import { Save, Plus, Trash2, Upload } from 'lucide-react';
 
 export default function StoriesAdmin() {
-  const { content, updateContent } = useAdmin();
+  const { content, updateContent, loading } = useAdmin();
   const [storiesData, setStoriesData] = useState<any>(null);
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (content?.stories) {
@@ -15,18 +16,30 @@ export default function StoriesAdmin() {
     }
   }, [content]);
 
-  const handleSave = () => {
-    updateContent({
-      ...content,
-      stories: storiesData
-    });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    try {
+      await updateContent({
+        ...content,
+        stories: storiesData
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error('Save failed:', error);
+      alert('Failed to save changes');
+    }
   };
 
   const updateStory = (index: number, field: string, value: string) => {
     const newItems = [...storiesData.items];
     newItems[index] = { ...newItems[index], [field]: value };
+    
+    // If setting mediaUrl, delete old fields
+    if (field === 'mediaUrl' && value) {
+      delete newItems[index].imageUrl;
+      delete newItems[index].videoUrl;
+    }
+    
     setStoriesData({ ...storiesData, items: newItems });
   };
 
@@ -36,7 +49,7 @@ export default function StoriesAdmin() {
       type: 'photo',
       title: 'New Story',
       subtitle: 'Location • City',
-      imageUrl: '/images/placeholder.jpg',
+      mediaUrl: '/images/placeholder.jpg',
       featured: false
     };
     setStoriesData({
@@ -50,7 +63,55 @@ export default function StoriesAdmin() {
     setStoriesData({ ...storiesData, items: newItems });
   };
 
-  if (!storiesData) return <div>Loading...</div>;
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isImage = file.type.startsWith('image');
+    if (!isImage) {
+      alert('Please upload an image or GIF file only');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size must be less than 10MB');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('files', file);
+
+      const response = await fetch('https://0jdbg6kb-5001.inc1.devtunnels.ms/api/media/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) throw new Error('Upload failed');
+
+      const result = await response.json();
+      const uploadedUrl = result.data[0].url;
+
+      updateStory(index, 'thumbnailUrl', uploadedUrl);
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Upload failed. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  if (loading || !storiesData) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -124,26 +185,96 @@ export default function StoriesAdmin() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Media URL (YouTube Video Only)</label>
                 <input
                   type="text"
-                  value={story.imageUrl}
-                  onChange={(e) => updateStory(index, 'imageUrl', e.target.value)}
+                  value={story.mediaUrl || story.imageUrl || story.videoUrl || ''}
+                  onChange={(e) => updateStory(index, 'mediaUrl', e.target.value)}
                   className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-[#a67b5b]"
+                  placeholder="https://youtu.be/VIDEO_ID"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Paste YouTube link only • No file uploads
+                </p>
               </div>
 
-              {story.type === 'film' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Video URL</label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Thumbnail (Photo or GIF)
+                </label>
+                <div className="flex gap-2">
                   <input
                     type="text"
-                    value={story.videoUrl || ''}
-                    onChange={(e) => updateStory(index, 'videoUrl', e.target.value)}
-                    className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-[#a67b5b]"
+                    value={story.thumbnailUrl || ''}
+                    onChange={(e) => updateStory(index, 'thumbnailUrl', e.target.value)}
+                    className="flex-1 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-[#a67b5b]"
+                    placeholder="/images/thumbnail.jpg"
                   />
+                  <label className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded cursor-pointer hover:bg-green-600 transition-all">
+                    <Upload size={16} />
+                    {uploading ? 'Uploading...' : 'Upload Thumbnail'}
+                    <input
+                      type="file"
+                      accept="image/*,.gif"
+                      onChange={(e) => handleThumbnailUpload(e, index)}
+                      disabled={uploading}
+                      className="hidden"
+                    />
+                  </label>
                 </div>
-              )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Upload photo or GIF thumbnail (Max 10MB). Shows before video plays on desktop.
+                </p>
+                <div className="mt-3 flex gap-4">
+                  {/* Media Preview */}
+                  {(story.mediaUrl || story.imageUrl || story.videoUrl) && (
+                    <div className="relative">
+                      {(() => {
+                        const url = story.mediaUrl || story.imageUrl || story.videoUrl || '';
+                        const isYouTube = /(?:youtube\.com|youtu\.be)/.test(url);
+                        const isGif = url.toLowerCase().endsWith('.gif');
+                        
+                        if (isYouTube) {
+                          return (
+                            <div className="relative">
+                              <div className="h-32 w-56 rounded border bg-gray-100 flex items-center justify-center">
+                                <div className="text-center">
+                                  <div className="text-red-600 font-bold mb-1">▶ YouTube</div>
+                                  <div className="text-xs text-gray-600">High Quality</div>
+                                </div>
+                              </div>
+                              <span className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded">YOUTUBE</span>
+                            </div>
+                          );
+                        } else if (isGif) {
+                          return (
+                            <div className="relative">
+                              <img src={url} alt="Preview" className="h-32 w-auto rounded border" />
+                              <span className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded">GIF</span>
+                            </div>
+                          );
+                        } else if (url.trim() !== '') {
+                          return (
+                            <div className="relative">
+                              <img src={url} alt="Preview" className="h-32 w-auto rounded border" />
+                              <span className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">PHOTO</span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </div>
+                  )}
+                  
+                  {/* Thumbnail Preview */}
+                  {story.thumbnailUrl && (
+                    <div className="relative">
+                      <img src={story.thumbnailUrl} alt="Thumbnail" className="h-32 w-auto rounded border" />
+                      <span className="absolute top-2 right-2 bg-purple-600 text-white text-xs px-2 py-1 rounded">THUMBNAIL</span>
+                    </div>
+                  )}
+                </div>
+              </div>
 
               <div className="flex items-center gap-2">
                 <input

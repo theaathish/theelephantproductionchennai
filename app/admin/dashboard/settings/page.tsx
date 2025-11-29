@@ -5,7 +5,7 @@ import { useAdmin } from '@/contexts/AdminContext';
 import { Save } from 'lucide-react';
 
 export default function SettingsAdmin() {
-  const { content, updateContent } = useAdmin();
+  const { content, updateContent, loading } = useAdmin();
   const [siteData, setSiteData] = useState<any>(null);
   const [footerData, setFooterData] = useState<any>(null);
   const [saved, setSaved] = useState(false);
@@ -17,17 +17,28 @@ export default function SettingsAdmin() {
     }
   }, [content]);
 
-  const handleSave = () => {
-    updateContent({
-      ...content,
-      site: siteData,
-      footer: footerData
-    });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    try {
+      await updateContent({
+        ...content,
+        site: siteData,
+        footer: footerData
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error('Save failed:', error);
+      alert('Failed to save changes');
+    }
   };
 
-  if (!siteData || !footerData) return <div>Loading...</div>;
+  if (loading || !siteData || !footerData) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div>

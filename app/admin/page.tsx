@@ -8,16 +8,28 @@ import { Lock } from 'lucide-react';
 export default function AdminLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login } = useAdmin();
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (login(password)) {
-      router.push('/admin/dashboard');
-    } else {
-      setError('Invalid password');
+    setLoading(true);
+    setError('');
+    
+    try {
+      const success = await login(password);
+      if (success) {
+        router.push('/admin/dashboard');
+      } else {
+        setError('Invalid password');
+        setPassword('');
+      }
+    } catch (err) {
+      setError('Login failed. Please try again.');
       setPassword('');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,9 +61,10 @@ export default function AdminLogin() {
 
           <button
             type="submit"
-            className="w-full bg-[#a67b5b] hover:bg-[#946b4d] text-white font-medium py-3 rounded transition-colors"
+            disabled={loading}
+            className="w-full bg-[#a67b5b] hover:bg-[#946b4d] disabled:bg-[#a67b5b]/50 disabled:cursor-not-allowed text-white font-medium py-3 rounded transition-colors"
           >
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </button>
 
           <p className="text-white/40 text-xs text-center mt-6">

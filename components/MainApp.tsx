@@ -16,7 +16,15 @@ export default function MainApp() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activePage, setActivePage] = useState('home');
-  const [loading, setLoading] = useState(true);
+  const [showHeader, setShowHeader] = useState(false);
+
+  useEffect(() => {
+    // Show header after 5 seconds
+    const timer = setTimeout(() => {
+      setShowHeader(true);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -52,18 +60,19 @@ export default function MainApp() {
         }
       `}</style>
 
-      <Preloader onComplete={() => setLoading(false)} />
       <GrainOverlay />
 
-      <div className={`font-sans text-[#2c2420] bg-[#fdfcf8] selection:bg-[#a67b5b] selection:text-white overflow-x-hidden min-h-screen flex flex-col transition-opacity duration-500 ${loading ? 'opacity-0' : 'opacity-100'}`}>
+      <div className="font-sans text-[#2c2420] bg-[#fdfcf8] selection:bg-[#a67b5b] selection:text-white overflow-x-hidden min-h-screen flex flex-col">
 
-        <Navigation
-          isScrolled={isScrolled}
-          activePage={activePage}
-          mobileMenuOpen={mobileMenuOpen}
-          setActivePage={setActivePage}
-          setMobileMenuOpen={setMobileMenuOpen}
-        />
+        <div className={`transition-opacity duration-1000 ${showHeader ? 'opacity-100' : 'opacity-0'}`}>
+          <Navigation
+            isScrolled={isScrolled}
+            activePage={activePage}
+            mobileMenuOpen={mobileMenuOpen}
+            setActivePage={setActivePage}
+            setMobileMenuOpen={setMobileMenuOpen}
+          />
+        </div>
 
         <main className="flex-grow">
           {activePage === 'home' && <HomePage setPage={setActivePage} />}

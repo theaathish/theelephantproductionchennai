@@ -11,9 +11,9 @@ import {
   BookOpen, 
   Mail, 
   MapPin, 
-  Image, 
   LogOut,
-  Settings
+  Settings,
+  Inbox
 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -33,9 +33,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { icon: Info, label: 'About Page', href: '/admin/dashboard/about' },
     { icon: Briefcase, label: 'Services', href: '/admin/dashboard/services' },
     { icon: BookOpen, label: 'Stories', href: '/admin/dashboard/stories' },
-    { icon: MapPin, label: 'Destinations', href: '/admin/dashboard/destinations' },
+    { icon: MapPin, label: 'Destination', href: '/admin/dashboard/destination' },
     { icon: Mail, label: 'Contact', href: '/admin/dashboard/contact' },
-    { icon: Image, label: 'Media Library', href: '/admin/dashboard/media' },
+    { icon: Inbox, label: 'Inquiries', href: '/admin/dashboard/inquiries' },
     { icon: Settings, label: 'Site Settings', href: '/admin/dashboard/settings' },
   ];
 
